@@ -239,8 +239,9 @@ function ScanClick()
 function ChangeBoth(state)
 {
 	//checks change_both_list below; if state is in the list, returns 'true'.
-	//[10,5] is the beginning of the scanner efficacies tutorial.
-	change_both_list = [[0,0],[1,1],[3,2],[5,3], [9,4],[12,5], [14,6], [16,7], [18,8], [20,9]];
+	//[10,5] is the beginning of the scanner efficacies tutorial; used for straight-to-task
+	change_both_list = [[10,5]];
+	//[[0,0],[1,1],[3,2],[5,3], [9,4],[12,5], [14,6], [16,7], [18,8], [20,9]];
 	if (short_list_in_long_list(state, change_both_list))
 		return true;
 	else

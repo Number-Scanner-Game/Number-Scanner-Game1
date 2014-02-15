@@ -1,181 +1,47 @@
 //Main task functionality. The various instructions_x.js files contain pieces of this
 
-//draggable implementation before paper instantiation
-Raphael.st.draggable = function (snap) {
-    var me = this, //reference to the set to use inside the drag functions
-        ox = 0, //relative origin
-        oy = 0,
-        lx = 0, //current location
-        ly = 0,
-        moveFunc = function (dx, dy, x, y) {
-            //slow, clumsy checks that it doesn't go offscreen
-            //over_x = ((me.getBBox().x < 0) && dx < 0) || ((me.getBBox().x2 > w) && dx > 0),
-            //over_y = ((me.getBBox().y < 0) && dy < 0) || ((me.getBBox().y2 > h) && dy > 0),
-            var o_x = (x < 0) || (x > w),
-                o_y = (y < 0) || (y > h);
-            if (snap == undefined || me.getBBox().y2 < snap || y < snap - 150) {
-                lx = (o_x) ? lx : ox + dx; //update current location
-                ly = (o_y) ? ly : oy + dy;
-            } else if (y > snap-150) {
-                lx = (o_x) ? lx : ox + dx; //only update horizontal movement
-            }
-            me.transform('t' + lx + ',' + ly);
-        },
-        startFunc = function () {},
-        endFunc = function () {
-            ox = lx;
-            oy = ly;
-        };
-    this.drag(moveFunc, startFunc, endFunc);
-};
-
-Raphael.el.draggable = function (snap) {
-    var me = this, //reference to the set to use inside the drag functions
-        ox = 0, //relative origin
-        oy = 0,
-        lx = 0, //current location
-        ly = 0,
-        moveFunc = function (dx, dy, x, y) {
-            var o_x = (x < 0) || (x > w),
-                o_y = (y < 0) || (y > h);
-            if (snap == undefined || me.getBBox().y2 < snap || y < snap - 150) {
-                lx = (o_x) ? lx : ox + dx; //update current location
-                ly = (o_y) ? ly : oy + dy;
-            } else if (y > snap-150) {
-                lx = (o_x) ? lx : ox + dx; //only update horizontal movement
-            }
-            me.transform('t' + lx + ',' + ly);
-        },
-        startFunc = function () {},
-        endFunc = function () {
-            ox = lx;
-            oy = ly;
-        };
-    this.drag(moveFunc, startFunc, endFunc);
-};
-
 window.onload = function () {
-    var R = Raphael(0, 0, "100%", "100%");
-        h = window.innerHeight, //global
-        w = window.innerWidth;  //global
 
-var makeClaw = function (x, y) {
-    R.setStart();
-    var arm = R.path('M' + x + ',' + y + 'l30,60l-30,60l5,0l40,-60,l-30,-60').attr({
-            fill: '#999',
-            stroke: '#555',
-                'stroke-width': 3
-            }),
-        arm2 = R.path('M' + x + ',' + y + 'l-30,60l30,60l-5,0l-40,-60,l30,-60').attr({
-                fill: '#999',
-                stroke: '#555',
-                'stroke-width': 3
-            }),
-        ring = R.circle(x, y, 15).attr({
-                fill: '#093',
-                stroke: '#060',
-                'stroke-width': 3
-            }),
-        rring = R.circle(x, y, 5).attr({
-                fill: '#999',
-                stroke: '#555',
-                'stroke-width': 2
-            }),
-        pull = R.path('M' + (x - 15) + ',' + y + 'l0,-' + 2*h + 'm30,0l0,' + 2*h + 'z').attr({fill: '#111', stroke: '#333',  'stroke-width': 2}),
-        carry = R.circle(x, 1.5 * y, 74).attr({
-                fill: '#000',
-                opacity: 0
-            }).toFront(),
-        claw = R.setFinish();
-    claw.box = claw.getBBox();
-    return (claw);
-},
+    var R = Raphael(0, 0, "100%", "100%"),
+        line_height = 75; //,,,
+        h = window.innerHeight,
+        w = window.innerWidth,
+        nll = .66*w, //number line length
+        line = R.rect('17%', String(line_height)+'%', '66%', 2).attr({fill: "white", stroke: "red", opacity: 1}),
+        number_line_start = R.text('17%', String(line_height+2)+'%', '1').attr({fill: '#333'}),
+        number_line_end = R.text('83%', String(line_height+2)+'%', '100').attr({fill: '#333'}),
+        textbox = R.rect('15%', '2%', '70%', 150, 5).attr({stroke:"white", opacity:1});
 
-    makeSandbox = function (level) {
-        var outline = '#050', //'#030',
-            horiz = '#0A0', //'#093',
-            vert = '#083'; //'#060';
+    //remove these?
+    var urlString = document.URL;
+    var urlParams = parseURLParams(urlString);
+
+    //crosshairs image
+    makeClaw = function(x,y){
         R.setStart();
-        var front = R.rect(0.1 * w - 7.5, 0.8 * h - 15, 0.8 * w + 15, 50).attr({
-                    fill: vert,
-                    stroke: outline,
-                    'stroke-width': 3
-                }),
-            top = R.path([
-                    ['m', 0.1 * w - 30, 0.8 * h],
-                    ['l', 30, -90],
-                    ['h', 0.8 * w],
-                    ['l', 30, 90],
-                    ['z']
-                    ]).attr({
-                        fill: horiz,
-                        stroke: outline,
-                        'stroke-width': 3
-                }),
-            center = R.path([
-                        ['m', 0.1 * w - 7.5, 0.8 * h - 15],
-                        ['l', 20, -60],
-                        ['h', 0.8 * w - 25],
-                        ['l', 20, 60],
-                        ['z']
-                        ]).attr({
-                            fill: vert,
-                            stroke: outline,
-                            'stroke-width': 3
-                    }),
-            back = R.rect(0.1 * w + 12.5, 0.8 * h - 75, 0.8 * w - 25, 50).attr({
-                            fill: vert,
-                            stroke: outline,
-                            'stroke-width': 3
-                    }),
-            bot = R.path([
-                        ['m', 0.1 * w + 12.5, 0.8 * h - 25],
-                        ['l', -4, 10],
-                        ['m', 0.8 * w - 17, 0],
-                        ['l', -4, -10]
-                        ]).attr({
-                            stroke: outline,
-                            'stroke-width': 3
-                        }),
-            topfront = R.rect(0.1 * w - 30, 0.8 * h, 0.8 * w + 60, 15).attr({
-                            fill: horiz,
-                            stroke: outline,
-                            'stroke-width': 3
-                        });
-        if (level == 'full') {          //different levels for intro:
-            var sand = R.path([
-                ['m', 0.1 * w, 0.8 * h - 17],
-                ['l', 15, -50],
-                ['l', 0.8 * w - 30, 0],
-                ['l', 15, 50],
-                ['z']
-                ]).attr({
-                    fill: '#FF9',
-                    stroke: '#CC9',
-                    'stroke-width': 1
-                });
-        } else if (level == 'half') {
-            var sand1 = R.path([
-                ['m', 0.1 * w + 6, 0.8 * h - 17],
-                ['l', 10, -32],
-                ['l', 0.8 * w - 30, 0],
-                ['l', 10, 32],
-                ['z']
-                ]).attr({
-                    fill: '#FF9',
-                    stroke: '#CC9',
-                    'stroke-width': 1
-                });
-            }
-    var s = R.setFinish();
-    //s.transform('s)
-    return (s);
-    },
-    makeScanners = function(sizes, efficacies) {
+        var arm = R.path('M'+x+','+y+'l30,60l-30,60l5,0l40,-60,l-30,-60').attr({fill:'#999',stroke:'#555','stroke-width':3});
+                    var arm2= R.path('M'+x+','+y+'l-30,60l30,60l-5,0l-40,-60,l30,-60').attr({fill:'#999',stroke:'#555','stroke-width':3}),
+                        pull = R.path('M'+x-15+','+y+'v-100 M'+x+15+','+y+'v-100').attr({stroke:'#333','stroke-width':3}),
+                        ring = R.circle(x,y,15).attr({fill:'#093', stroke:'#060','stroke-width':3}),
+                        rring = R.circle(x,y,5).attr({fill:'#999', stroke:'#555','stroke-width':2}),
+                        carry = R.circle(x,1.5*y,70).attr({fill:'#000',opacity:0}),
+                        claw = R.setFinish();
+                    return claw;
+                };
+    var claw = makeClaw(0.66*w,0.33*h);
+    var c = claw.getBBox();
+
+
+    
+        //var c = R.image("imagebot2.svg", .8*w, (line_height-35)*.01*h, .03*w, .03*w).data('pos', [.48*w,(line_height+15)*.01*h]);
+
+    var actual_efficacies;    
+    makeScanners = function(sizes, efficacies)
+    {
         //creates as many scanners as specified by sizes.length, and creates text next to them
         // efficacies = shuffle(efficacies);
-    var actual_efficacies = efficacies;
-    var scnrs = [],
+        actual_efficacies = efficacies;
+        var scnrs = [],
         z = 0;
         for (var i=0; i < sizes.length; i++){
             var fill = 1-efficacies[i];
@@ -183,91 +49,13 @@ var makeClaw = function (x, y) {
             R.text(.09*w,(line_height-(38 -z*5))*.01*h, String(efficacies[i]*100+'%')).attr({fill:'#333'});
             z++;
         }
-        return scnrs;
-    }, 
-makeUfo = function (x, y) {
-    R.setStart();
-    var opac = 1; //to allow easy change of opacity to represent scanner reliability as in the original adult version
-    topBody = R.path(
-        "M" + x + "," + y + " c30,-100 170,-100 200,-2 c0,-25 -200,-25 -200,0").attr({
-        fill: "#2ac7d6",
-            "stroke-width": 3,
-        stroke: "#24b7c5",
-        opacity: opac
-    }),
-    //"M100,200 C130,100 270,100 300,200 C300,175 100,175 100,200"
-    dome = R.path(
-        "M" + (x + 60) + "," + (y - 60) + " c20,-55 60,-55 80,0 c-20,-10 -60,-10 -80 0").attr({
-        fill: "#e0f4f6",
-            "stroke-width": 3,
-        stroke: "#ceebee",
-        opacity: opac
-    }),
-    bottom = R.path(
-        "M" + x + "," + y + " c0,25 200,25 200,0 c0 -25 -200,-25 -200,0").attr({
-        fill: "#25a4d2",
-            "stroke-width": 3,
-        stroke: "#249ac5",
-        opacity: opac
-    }),
-    opening = R.path("M" + (x + 25) + "," + y + " c20,15 120,15 145,0 c-20,-15 -120,-15  -145,0").attr({
-        fill: "#8acde5",
-            "stroke-width": 3,
-        stroke: "#6cc1df",
-        opacity: opac
-    }),
-    spikes = R.path("M" + (x + 30) + "," + (y + 10) + " l15,0 l-7.5,20z M" + (x + 150) + "," + (y + 10) + " l15,0 l-7.5,20z M" + (x + 90) + "," + (y - 15) + " l15,0 l-7.5,20z").attr({
-        fill: "#808080",
-        stroke: "#636363",
-            "stroke-width": 2,
-        opacity: opac
-    }),
-    //"M100,200 C100,225 300,225 300,200 C300,175 100,175 100,200"
-
-    num = 25, //to move location of each star to the right
-    fillColor = "#e1c222"; //to make empty stars (out of 5) for reliabilities
-    for (i = 0; i < 5; i += 1) {
-        R.path("M" + (x + num) + "," + (y - 40) + " l10,0 l5,-10 l5,10 l10,0 l-10,6 l7,11 l-12,-7 l-12,7 l7,-11z").attr({
-            fill: fillColor,
-            stroke: "#d6a719",
-            opacity: opac
-        });
-        num += 30;
+        return scnrs;       
     }
-    //"M125,225 L135 225 L140 215 L145 225 L155 225 L145 231 L152 242 L140 235 L128 242 L135 231z
-
-    //light initialization should occur only when the SCAN button is pressed
-    /*var light = R.path("M" + x + "," + y + " l200,0 l0,100 l-200,0z").attr({
-            fill: "#2418df",
-            opacity: 0.25
-        }),
-        //"M100,200 C100,225 300,225 300,200 L300 300 L100 300z" */
-    ufoSet = R.setFinish();
-    ufoSet.getBBox().y2
-    return ufoSet;
-},
-    //maketest = function{
-    //    R.startset();
-    //    R.circle
-
-    var nll = .66*w, //number line length
-        snap_to = 0.8 * h - 44, //snap-to guide
-        line_height= snap_to, //legacy (75)
-        sandBox = makeSandbox('full'),
-        claw = makeClaw(0.85 * w, 0.15 * h),
-        c = claw.getBBox();
-    claw.draggable(snap_to);
-    var ufo = makeUfo(0.5 * w, 0.2 * h);
-    ufo.draggable(snap_to); 
-
     if (parent.topframe.trial == parent.topframe.total_trials-1)
     {
         //go to the last screen if we've run all the trials.
         go_to_end = true;
     }
-        //remove these?
-        var urlString = document.URL;
-        var urlParams = parseURLParams(urlString);
 
     //check whether you're continuing a previous session or not. Ensures that the right variables persist.
     StartSession();
@@ -331,7 +119,7 @@ makeUfo = function (x, y) {
             top_alert("<p>You may only move the crosshairs after you have used at least one scanner on the number line.</p>", "<p>Find the number<p>");
         }
     }
-    */
+*/
     //controls click of 'scan' button. Don't change variable name here; it's called in other files.
     mainButtonClick = function()
     {
@@ -343,7 +131,7 @@ makeUfo = function (x, y) {
                 {   scanners_on_line += 1;
                     scannable = true;
                 }
-            };
+        };
         if (scanners_on_line == 1) //This is the correct number of scanners to have on line. Scan.
         {
             for (var i=0; i < scanners.length; i++)
@@ -369,7 +157,7 @@ makeUfo = function (x, y) {
         else //Don't scan.
         {
           if (!scannable)
-          {
+            {
                 //No scanner on the line
                 top_alert('<p>You must place a scanner on the number line before clicking \'SCAN\'.</p>', '<p>Find the number!</p>')
             }
@@ -383,7 +171,7 @@ makeUfo = function (x, y) {
                 setTimeout(function()
                 {
                     top_alert('<p>Only one scanner can be on the number line.</p>', '<p>Find the number!</p>');
-                }, 300);
+                    }, 300);
                 scanners_on_line = 0;
                 scannable = false;
             }
@@ -510,8 +298,8 @@ makeUfo = function (x, y) {
         else
         {
             scanner.animate({opacity: .2}, 1000, 'bounce');
-            setTimeout(function()
-                {scanner.animate({opacity: .5}, 1000, 'bounce')}, 700);
+        setTimeout(function()
+            {scanner.animate({opacity: .5}, 1000, 'bounce')}, 700);
         }
         //Append new click data (scanner width, location_left, location_right, result) to the output array
         output.clicks.push([absolute_to_relative(scanner.attr('width')), 1-scanner.data('beta'), convert_to_number_line(left), convert_to_number_line(right), signal]);
@@ -595,8 +383,8 @@ makeUfo = function (x, y) {
     };
     R.set(scanners).drag(move, start, up);
 };
-convertNumber = function(num)
-{
+    convertNumber = function(num)
+    {
         //converts number-line coordinates to absolute coordinates
         range = .66*window.innerWidth;
         left = .17*window.innerWidth;
@@ -641,36 +429,36 @@ convertNumber = function(num)
         var v  = decodeURIComponent(nv[1]);
         if ( !(n in params) ) {
           params[n] = [];
+        }
+        params[n].push(nv.length === 2 ? v : null);
       }
-      params[n].push(nv.length === 2 ? v : null);
-  }
-  return params;
-};
-getSession = function(userID)
-{
-  var result = 0;
-  $.ajax({
-      type: "POST",
-      datatype: "json",
-      url: "http://198.61.169.95/pedro/js/intro.php",
-      data: userID,
-      async: false,
-      success: function(data,status){
+      return params;
+    };
+    getSession = function(userID)
+    {
+      var result = 0;
+      $.ajax({
+          type: "POST",
+          datatype: "json",
+          url: "http://198.61.169.95/pedro/js/intro.php",
+          data: userID,
+          async: false,
+          success: function(data,status){
             //alert("Data: " + data);
             result = data;
-        },
-        error: function(){
+          },
+          error: function(){
             alert('failure to query database');
         },
-    });
-  return result
-};
+        });
+      return result
+    };
 var BrowserDetect = {
     init: function () {
         this.browser = this.searchString(this.dataBrowser) || "An unknown browser";
         this.version = this.searchVersion(navigator.userAgent)
-        || this.searchVersion(navigator.appVersion)
-        || "an unknown version";
+            || this.searchVersion(navigator.appVersion)
+            || "an unknown version";
         this.OS = this.searchString(this.dataOS) || "an unknown OS";
     },
     searchString: function (data) {
@@ -692,47 +480,47 @@ var BrowserDetect = {
         return parseFloat(dataString.substring(index+this.versionSearchString.length+1));
     },
     dataBrowser: [
-    {
-        string: navigator.userAgent,
-        subString: "Chrome",
-        identity: "Chrome"
-    },
-    {   string: navigator.userAgent,
-        subString: "OmniWeb",
-        versionSearch: "OmniWeb/",
-        identity: "OmniWeb"
-    },
-    {
-        string: navigator.vendor,
-        subString: "Apple",
-        identity: "Safari",
-        versionSearch: "Version"
-    },
-    {
-        prop: window.opera,
-        identity: "Opera",
-        versionSearch: "Version"
-    },
-    {
-        string: navigator.vendor,
-        subString: "iCab",
-        identity: "iCab"
-    },
-    {
-        string: navigator.vendor,
-        subString: "KDE",
-        identity: "Konqueror"
-    },
-    {
-        string: navigator.userAgent,
-        subString: "Firefox",
-        identity: "Firefox"
-    },
-    {
-        string: navigator.vendor,
-        subString: "Camino",
-        identity: "Camino"
-    },
+        {
+            string: navigator.userAgent,
+            subString: "Chrome",
+            identity: "Chrome"
+        },
+        {   string: navigator.userAgent,
+            subString: "OmniWeb",
+            versionSearch: "OmniWeb/",
+            identity: "OmniWeb"
+        },
+        {
+            string: navigator.vendor,
+            subString: "Apple",
+            identity: "Safari",
+            versionSearch: "Version"
+        },
+        {
+            prop: window.opera,
+            identity: "Opera",
+            versionSearch: "Version"
+        },
+        {
+            string: navigator.vendor,
+            subString: "iCab",
+            identity: "iCab"
+        },
+        {
+            string: navigator.vendor,
+            subString: "KDE",
+            identity: "Konqueror"
+        },
+        {
+            string: navigator.userAgent,
+            subString: "Firefox",
+            identity: "Firefox"
+        },
+        {
+            string: navigator.vendor,
+            subString: "Camino",
+            identity: "Camino"
+        },
         {       // for newer Netscapes (6+)
             string: navigator.userAgent,
             subString: "Netscape",
@@ -756,8 +544,8 @@ var BrowserDetect = {
             identity: "Netscape",
             versionSearch: "Mozilla"
         }
-        ],
-        dataOS : [
+    ],
+    dataOS : [
         {
             string: navigator.platform,
             subString: "Win",
@@ -769,35 +557,35 @@ var BrowserDetect = {
             identity: "Mac"
         },
         {
-         string: navigator.userAgent,
-         subString: "iPhone",
-         identity: "iPhone/iPod"
-     },
-     {
-        string: navigator.platform,
-        subString: "Linux",
-        identity: "Linux"
-    }
+               string: navigator.userAgent,
+               subString: "iPhone",
+               identity: "iPhone/iPod"
+        },
+        {
+            string: navigator.platform,
+            subString: "Linux",
+            identity: "Linux"
+        }
     ]
 
 };
 BrowserDetect.init();
 
-convert_to_number_line = function(num)
-{
-    floor = .17*w;
-    range = .66*w;
+    convert_to_number_line = function(num)
+    {
+        floor = .17*w;
+        range = .66*w;
 
-    var newnum = ((num-floor)/(range))*100.0;
-    var a = Math.round(newnum);
-    return a;
+        var newnum = ((num-floor)/(range))*100.0;
+        var a = Math.round(newnum);
+        return a;
 
-};
-absolute_to_relative = function(num)
-{
-    range = .66*w;
-    return num*1.0/range;
-};
+    };
+    absolute_to_relative = function(num)
+    {
+        range = .66*w;
+        return num*1.0/range;
+    };
 
 function shuffle(array) {
     for (var i = array.length - 1; i > 0; i--) {
@@ -826,10 +614,10 @@ Raphael.st.draggable = function () {
             ox = lx;
             oy = ly;
         };
-        this.drag(moveFunc, startFunc, endFunc);
-    };
+    this.drag(moveFunc, startFunc, endFunc);
+};
 
-    Raphael.el.draggable = function () {
+Raphael.el.draggable = function () {
     var me = this, //reference to the set to use inside the drag functions
         //relative coordinates: 
         ox = 0, //origin
@@ -846,5 +634,5 @@ Raphael.st.draggable = function () {
             ox = lx;
             oy = ly;
         };
-        this.drag(moveFunc, startFunc, endFunc);
-    };
+    this.drag(moveFunc, startFunc, endFunc);
+};

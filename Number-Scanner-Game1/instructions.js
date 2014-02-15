@@ -2,7 +2,7 @@
             //complete. gets sessions, writes to database, has all scanner functionality, 
             window.onload = function () {
                 var R = Raphael(0, 0, "100%", "100%"),
-                    line_height = 75;
+                    line_height = 75,
                     line = R.rect('17%', String(line_height)+'%', '66%', 2).attr({fill: "white", stroke: "red", opacity: 1}),
                     number_line_start = R.text('17%', String(line_height+2)+'%', '1').attr({fill: '#333'}),
                     number_line_end = R.text('83%', String(line_height+2)+'%', '100').attr({fill: '#333'}),

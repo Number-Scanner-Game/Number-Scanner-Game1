@@ -23,4 +23,6 @@ var certainty = null; //rewrite this on every go.
 var output = null;
 
 parent.topframe.document.getElementById("tutorial").innerHTML=instructions[top_index];
-parent.bottomframe.location = "instructions"+parent.topframe.bottom_index.toString()+".html";
+parent.bottomframe.location = "index.html"; //to bypass instructions1.html
+
+//"instructions"+parent.topframe.bottom_index.toString()+".html";
