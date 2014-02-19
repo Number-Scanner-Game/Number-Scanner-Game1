@@ -40,12 +40,13 @@ function updateObjectAttr(object, x, y) {
 
 			// set lx,ly = new object coordinates
 			if (setBox.x  + dx < 0) {lx = 0 + offcx;}
-			else if (setBox.x2 + dx  > 800) {
-				lx = 800 + offcx - setBox.width;}
+			else if (setBox.x2 + dx  > w) {
+				lx = w + offcx - setBox.width;}
 			else {lx = object.attr('cx') + dx;}
 
 			if (setBox.y  + dy < 0) {ly = 0 + offcy;}
-			else if (setBox.y2 + dy  > line) {ly = line + offcy - setBox.height;}
+			else if (setBox.y + dy > line -100) {ly = line + offcy - setBox.height;}
+			//(setBox.y2 + dy  > line)
 			else {ly = object.attr('cy') + dy;}
 
 			object.attr({cx: lx, cy: ly});
@@ -61,11 +62,11 @@ function updateObjectAttr(object, x, y) {
 			dy = (y - object.getBBox().y) - object.y;
 
 			if (setBox.x + dx < 0) {lx = 0;}
-			else if (setBox.x2 + dx  > 800) {lx = 0;}
+			else if (setBox.x2 + dx  > w) {lx = 0;}
 			else {lx = dx;}
 
 			if (setBox.y + dy < 0) {ly = 0;}
-			else if (setBox.y2 + dy  > line) {ly = 0;}
+			else if (setBox.y2 + dy > line + 100) {ly = 0;}
 			else {ly = dy;}
 /*
 			if (offleft) {lx = 0;}
@@ -77,7 +78,6 @@ function updateObjectAttr(object, x, y) {
 			else {ly = dy;}
 */
 			object.attr({path: Raphael.transformPath(object.attr('path'), '...T' + lx + ',' + ly)});
-			//console.log(box.x);
 			}
 		break;
 		default: {
@@ -94,11 +94,11 @@ function updateObjectAttr(object, x, y) {
 
 			// set lx, ly = new object coordinates
 			if (setBox.x  + dx < 0) {lx = 0 + offx;}
-			else if (setBox.x2 + dx  > 800) {lx = 800 + offx - setBox.width;}
+			else if (setBox.x2 + dx  > w) {lx = w + offx - setBox.width;}
 			else {lx = object.attr('x') + dx;}
 
 			//y direction has other fxns
-			if (offbot) {
+			if (setBox.y + dy > line) {
 				if (setNow[0].data('scnr')) {
 					//do SCAN functions
 					setNow[1].animate(appear)		
@@ -138,6 +138,26 @@ function start(object, x, y, event) {
 function move(object, dx, dy, x, y, event) {
 	switch(object.type) {
 		case 'set': {
+			setNow = object;
+			setBox = setNow.getBBox();		//used in element drag fxns
+			online = setBox.y2 > line;
+			if (online) {
+				object[0].data('online', 1)
+				if (object[0].data('which') == 'scanner') {
+					object[9].animate(appear);
+				};
+			}
+			else {
+				if (object[0].data('which') == 'scanner') {
+					object[9].animate(disappear);
+				};
+			};
+			// slow and sticky parameters
+			//offleft = (setBox.x) < 0 ? 1 : 0;
+			//offright = (setBox.x2) > w ? 1 : 0;
+			//offtop = (setBox.y) < 0 ? 1 : 0;
+			//offbot = (setBox.y2 + dy) > line ? 1 :0;
+			//online2 = setBox.y2 + dy> line - 100;
 			for (var ndx = 0; ndx < object.length; ndx++) {
 				updateObjectAttr(object[ndx], x, y);
 			}
@@ -153,7 +173,6 @@ function move(object, dx, dy, x, y, event) {
 function stop(object, event) {
 };
 
-/* moved to other file
 //----------------------------------------------------------------------------
 function onStart(x, y, event) {
 	start(this, x, y, event);
@@ -189,5 +208,5 @@ function onSetStop(object) {
 		stop(object, event);
 	}
 };
-*/
+
 
