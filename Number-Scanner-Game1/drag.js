@@ -1,7 +1,8 @@
 //----------------------------------------------------------------------------
 // drag.js //
-// paths and circles/rects don't move exactly together
-// for now, i'm changing everything to paths
+// only works consistently for untransformed paths.
+// if transformations needed, use:
+// object.attr({path: Raphael.transformPath(object.attr('path'), 'transformation string')}) 
 
 function setObjectXY(object, x, y) {
 	switch(object.type) {
@@ -27,37 +28,6 @@ function setObjectXY(object, x, y) {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function updateObjectAttr(object, x, y) {
-	switch(object.type) {
-		case 'circle': {
-			// get offsets of object within set
-			var offcx = object.attr('cx') - setBox.x,
-				offcy = object.attr('cy') - setBox.y;
-				rx = object.attr('rx'),
-				//ry = object.attr('ry'),
-			//these deltas could be carried through the fxns instead of defining it here
-			dx = (x - object.attr('cx')) - object.x;
-			dy = (y - object.attr('cy')) - object.y;
-
-			// set lx,ly = new object coordinates
-			if (setBox.x  + dx < 0) {lx = 0 + offcx;}
-			else if (setBox.x2 + dx  > w) {
-				lx = w + offcx - setBox.width;}
-			else {lx = object.attr('cx') + dx;}
-
-			if (setBox.y  + dy < 0) {ly = 0 + offcy;}
-			else if (setBox.y + dy > line -100) {ly = line + offcy - setBox.height;}
-			//(setBox.y2 + dy  > line)
-			else {ly = object.attr('cy') + dy;}
-
-			object.attr({cx: lx, cy: ly});
-		}
-		break;
-		case 'path': {
-			// get offsets of object within set
-			//var box = object.getBBox(),
-			//	offx = box.x - setBox.x,
-			//	offy = box.y - setBox.y;
-
 			dx = (x - object.getBBox().x) - object.x;
 			dy = (y - object.getBBox().y) - object.y;
 
@@ -65,64 +35,57 @@ function updateObjectAttr(object, x, y) {
 			else if (setBox.x2 + dx  > w) {lx = 0;}
 			else {lx = dx;}
 
-			if (setBox.y + dy < 0) {ly = 0;}
-			else if (setBox.y2 + dy > line + 100) {ly = 0;}
-			else {ly = dy;}
-/*
-			if (offleft) {lx = 0;}
-			else if (offright) {lx = 0;}
-			else {lx = dx;}
+			switch(setNow[0].data('which')) {
+				case 'ship': {
+					if (setBox.y + dy < 0) {ly = 0;}
+					else if (setBox.y2 + dy > line ) {
+						if (!object.data('snapped')) {
+						    var next = Raphael.pathToRelative(object.attr('path'));
+						    var offset = next[0][2] - setBox.y;
+						    next[0][2] = line - setBox.height + offset + 100;
+						    object.attr({'path' : next});
+						    setNow[0].data('snapped', 1);
+						};
+						ly = 0;
+					}
+					else {ly = dy;
+						setNow.data('snapped', 0)}
+				}
+				break;
 
-			if (offtop) {ly = 0;}
-			else if (offbot) {ly = 0;}
-			else {ly = dy;}
-*/
-			object.attr({path: Raphael.transformPath(object.attr('path'), '...T' + lx + ',' + ly)});
-			}
-		break;
-		default: {
-			// get offsets of object within set
-			var offx = object.attr('x') - setBox.x,
-				offy = object.attr('y') - setBox.y,
-				//offx2 = object.attr('x2') - setBox.x2,
-				//offy2 = object.attr('y2') - setBox.y2,
-				//width = object.attr('width'),
-				//height = object.attr('height');
+				case 'claw': {
+					if (setBox.y + dy < 0) {ly = 0;}
+					else if (setBox.y2 + dy > line) {
+					    if (!object.data('snapped')) {
+					    	var next = Raphael.pathToRelative(object.attr('path'));
+					    	next[0][2] = line - 60;
+					    	object.attr({'path' : next});
+					    	setNow[0].data('snapped', 1);
+					    };
+					    ly = 0;
+					}
 
-			dx = (x - object.attr('x')) - object.x;
-			dy = (y - object.attr('y')) - object.y;
-
-			// set lx, ly = new object coordinates
-			if (setBox.x  + dx < 0) {lx = 0 + offx;}
-			else if (setBox.x2 + dx  > w) {lx = w + offx - setBox.width;}
-			else {lx = object.attr('x') + dx;}
-
-			//y direction has other fxns
-			if (setBox.y + dy > line) {
-				if (setNow[0].data('scnr')) {
-					//do SCAN functions
-					setNow[1].animate(appear)		
+					else {ly = dy;
+						setNow.data('snapped', 0)};
+				}
+				break;
+				default: {
+					if (setBox.y + dy < 0) {ly = 0;}
+					else if (setBox.y2 + dy > h) {ly = 0;}
+					else {ly = dy;}
 				};
-				ly = line + offy - setBox.height;
-			}
-			else {
-				if (setNow[0].data('scnr')) {
-					//undo SCAN functions
-					setNow[1].animate(disappear)	
-				};
-				if (setBox.y  + dy < 0) {ly = 0 + offy;} //offtop
-				else {ly = object.attr('y') + dy;}	//free movement
-				}; 	
-			object.attr({x: lx, y: ly});
-		};
-	};
+			};
+
+			object.attr({
+				path: Raphael.transformPath(object.attr('path'), '...T' + lx + ',' + ly)});
 };
 
-//----------------------------------------------------------------------------
-//	on place to move our set or simple objects
+//---------------------------------------------------------------------------
 function start(object, x, y, event) {
+	object.toFront();
 	switch(object.type) {
 		case 'set': {
+			object[0].data('reset', 0);			//allow for posiiton reset
 			for (var ndx = 0; ndx < object.length; ndx++) {
 				setObjectXY(object[ndx], x, y);
 			}
@@ -141,26 +104,19 @@ function move(object, dx, dy, x, y, event) {
 			setNow = object;
 			setBox = setNow.getBBox();		//used in element drag fxns
 			online = setBox.y2 > line;
+			// object[0].data('online', (setBox.y2 > line));
+			// note: figure out differences between true/false, 1/0
 			if (online) {
 				object[0].data('online', 1)
-				if (object[0].data('which') == 'scanner') {
-					object[9].animate(appear);
-				};
 			}
 			else {
-				if (object[0].data('which') == 'scanner') {
-					object[9].animate(disappear);
-				};
+				object[0].data('online', 0)
 			};
-			// slow and sticky parameters
-			//offleft = (setBox.x) < 0 ? 1 : 0;
-			//offright = (setBox.x2) > w ? 1 : 0;
-			//offtop = (setBox.y) < 0 ? 1 : 0;
-			//offbot = (setBox.y2 + dy) > line ? 1 :0;
-			//online2 = setBox.y2 + dy> line - 100;
-			for (var ndx = 0; ndx < object.length; ndx++) {
-				updateObjectAttr(object[ndx], x, y);
+			
+			for (var i = 0; i < object.length; i++) {
+				updateObjectAttr(object[i], x, y);
 			}
+			
 		}
 		break;
 		default: {
@@ -171,6 +127,21 @@ function move(object, dx, dy, x, y, event) {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function stop(object, event) {
+	if ((object[0].data('which') == 'ship') && (object[0].data('online')) && !(object[0].data('button'))) {
+		object[8].animate({
+			opacity: 1.0,
+			path: Raphael.transformPath(object[8].attr('path'), 's100,100')
+		},200,'bounce');
+		object[0].data('button', 1);		//button appears
+	}
+
+	else if ((object[0].data('which') == 'ship') && !(object[0].data('online')) && (object[0].data('button'))) {
+		object[8].animate({
+			opacity: 0.0,
+			path: Raphael.transformPath(object[8].attr('path'), 's0.01,0.01')
+		},200,'bounce');
+		object[0].data('button', 0);		//button disappears
+	};
 };
 
 //----------------------------------------------------------------------------
