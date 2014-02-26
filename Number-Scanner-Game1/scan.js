@@ -19,13 +19,17 @@ function setTarget (range) {
 	// not doing anything with range yet;
 	// could use fewer than 100 numbers
 	target.push(center)
-	}
 	return target;
+}
+
+function stars2eff (stars) {
+	var eff = 0.375 + 0.125 * stars;
+	return eff
 }
 
 function scan (scanner) {
 	// 
-	if (scanner.data())
+	//if (scanner.data())
 }
 
 /*
@@ -77,6 +81,19 @@ function guess (claw) {
 * finished
 * fault?
 
+data = {
+	'user':0
+}
+[user
+	id:
+	[trial
+		trial#:
+		[scan
+			x:
+			x2:
+			]
+		]]
+
 //// global ////
 * guess okay: 1,0
 * scan okay: 1,0
@@ -86,3 +103,5 @@ function guess (claw) {
 
 
 how does parent work?
+
+*/
