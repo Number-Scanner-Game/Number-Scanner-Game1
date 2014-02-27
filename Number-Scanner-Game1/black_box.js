@@ -73,16 +73,17 @@ window.onload = function() {
     	    		'stroke-width': 3
     	    	});
             sand = bottom.clone().attr({
-	            fill: '#FF9',
+	            fill: '#FFFF99',
 	            stroke: '#CC9',
 	          	'stroke-width': 1,
 	          	opacity: 1
    		    }).animate({
-   		    	transform: 's0.992,0.94',
-   		    }, 500,'<'),
+   		    	transform: 's0.992,0.96',
+   		    }, 1000,'<'),
+   		    /*
    		    cover = sand.clone().attr({
    		    	transform: 's0.5,0'
-   		    });
+   		    });*/
 			sandbox = R.setFinish();
 			sandbox[0].data = {
 				which: 'sandbox'
@@ -107,8 +108,10 @@ window.onload = function() {
 	 * 
 	 **/
 	var makeUfo = function (x, y, size, stars) {
-    	var opac = 1; //to allow easy change of opacity to represent scanner reliability as in the original adult version
-    	var r = size*length*0.5;
+    	var r = size*length*0.5,
+    		opac = 1,
+    		color = '#'+(5-stars)*222+'';
+    		color2 = '#'+stars*222+'';
     	R.setStart();
 
     	//holder for data; indicates scanner width
@@ -117,8 +120,10 @@ window.onload = function() {
     		['h', 2*r],
     		['l', -r, -90],
     		['z']]).attr({
-	    		fill: '#666',
-    			opacity: 0.3
+	    		fill: color, //'#666',
+    			opacity: 1,
+    			'stroke-width': 2,
+    			stroke: color2
     		}), 
 
         	bottom = R.path(			//[1]
@@ -268,11 +273,11 @@ window.onload = function() {
 			 		scanner[1].animate({
 	    				fill:'#e1c222', 
 	    				stroke: '#d6a719'
-	    			}, 100, 'bounce', function () {
+	    			}, 300, '>', function () {
 	    				scanner[1].animate({
 	    					fill: '#e0f4f6', 
 	    					stroke: '#ceebee'
-	    				}, 500, 'bounce');
+	    				}, 600, '<');
 					});
     			};
     		});
@@ -288,7 +293,7 @@ window.onload = function() {
     			scnr[8].animate({
 					path: Raphael.transformPath(oldpath, 's0.01,0.01'),
 					opacity: 0
-				 }, 200, 'bounce', function () {
+				 }, 600, 'backIn', function () {
 			 		RESET(scnr);		// return to position
 				 });
     		}
@@ -333,33 +338,43 @@ window.onload = function() {
 			var x = scanner.getBBox().x,
 				x2 = scanner.getBBox().x2,
 				cx = (x2 - x)/2 + x,
-				r = scanner.data('length') * 0.5,
+				r = scanner[0].data('length') * 0.5,
 				hit = (number2position(target) >= x) && (number2position(target) <= x2),
 				displayhit = (Math.random() < scanner[0].data('eff')) ? hit : !hit,
 				//stamp not currently working
+				/*
 				stamp = [['M', cx - r, line],
 					['h', 2*r],
 					['v', 100],
 					['h', -2*r],
 					['z']];
+				*/
+				stamp = R.rect(cx-r, line+5, 2*r, 0).attr({
+					opacity:0
+				});
 
-			console.log('hit: '+hit+' displayhit: '+displayhit+' eff: '+ scanner[0].data('eff')+'');
+			//var stamp = 'M'+x+','+line+'l100,0l0,40l-100,0z';
+
+			console.log('cx: '+ cx+ ' r: '+r+ ' hit: '+hit+' displayhit: '+displayhit+' eff: '+ scanner[0].data('eff')+'');
 			if (displayhit) {
 				scanner[0].animate({
 					opacity:1,
 					fill: '#06F' //"#2418df"
 				},500,'<', function () {
 					this.animate({
-						opacity:0.2, 
+						//opacity:0.2, 
 						fill: '#555'
 					},500,'<');
-					R.path(stamp).attr({		//stamp blue
+					stamp.animate({		//stamp blue
 						opacity: 1,
+						height: 90,
 						stroke: '#03C',
-						fill: '#06F'
-					}).animate({
-						opacity: 0.3
-					}, 500, '>');
+						fill: '#06F',
+						'stroke-width': 4
+					}, 500, '>', function () {
+						stamp.animate({
+							opacity: 0.3
+						}, 200)});
 					scanner.toFront();
 				});
 
@@ -370,16 +385,19 @@ window.onload = function() {
 					fill: '#F30'
 				},500,'<', function () {
 					this.animate({
-						opacity:0.2, 
+						//opacity:0.2, 
 						fill: '#555'
 					},500,'<');
-					R.path(stamp).attr({		//stamp red
-						opacity: 0,
-						stroke: '#C30',
-						fill: '#F30'
-					}).animate({
-						opacity: 0.3
-					}, 500, '>');
+					stamp.animate({		//stamp red
+						opacity: 1,
+						height: 90,
+						stroke: '#900',
+						fill: '#F00',
+						'stroke-width': 4
+					}, 500, '>', function () {
+						stamp.animate({
+							opacity: 0.3
+						}, 200)});
 					scanner.toFront();
 				});
 			};
@@ -411,38 +429,52 @@ window.onload = function() {
 	};
 
 	function makeClaw (x, y) {
-		var carry = R.path('M' + x + ',' + y + 'm-70,0a70,70,0,1,0,140,0a70,70,0,1,0,-140,0z')
+		var carry = R.path('M' + x + ',' + y + 'm-70,50a70,70,0,1,0,140,0a70,70,0,1,0,-140,0z')
 			.attr({
-		//R.circle(x, 1.5 * y, 70).attr({
             	fill: '#000',
-            	opacity: 0.0
+            	opacity: 0
         	}).toFront(),
-	    	arm = R.path('M' + x + ',' + y + 'l30,60l-30,60l5,0l40,-60,l-30,-60').attr({
-	            fill: '#999',
-	            stroke: '#555',
-	                'stroke-width': 3
+	    	arm = R.path('M' + x + ',' + y + 'm0,15l25,50l-25,60l5,0l45,-60,l-30,-75')
+	    		.attr({
+		            //'l28,60l-26,54l2,6l2,2l45,-60,l-26,-60'
+		            fill: '#888',
+		            stroke: '#555',
+		                'stroke-width': 3
 	            }),
-	        arm2 = R.path('M' + x + ',' + y + 'l-30,60l30,60l-5,0l-40,-60,l30,-60').attr({
-	                fill: '#999',
+	        arm2 = R.path('M' + x + ',' + y + 'm0,15l-25,50l25,60l-5,0l-45,-60,l30,-75')
+	        	.attr({
+	                fill: '#888',
 	                stroke: '#555',
 	                'stroke-width': 3
 	            }),
-	        ring = R.path('M' + x + ',' + y + 'm-15,0 a15,15,0,1,0,30,0a15,15,0,1,0,-30,0z')
+	        pull = R.path('M' + (x - 28) + ',' + y + 'l0,-' + line + 'l56,0l0,' + line + '')
+	    		.attr({				//claw[3]
+			    	fill: 'none', 
+			    	stroke: '#444',  
+			    	'stroke-width': 4
+		    	}),
+		    ringpath = 'M' + x + ',' + y + 'm-30,0 a30,30,0,1,0,60,0a30,30,0,1,0,-60,0z',
+	        ring = R.path(Raphael.transformPath(ringpath, 's1.1,1.1'))
 	        	.attr({
-	        //R.circle(x, y, 15).attr({
 	                fill: '#093',
 	                stroke: '#050',
 	                'stroke-width': 3
 	            }),
-	        rring = R.path('M' + x + ',' + y + 'm-5,0 a5,5,0,1,0,10,0a5,5,0,1,0,-10,0z')
+	        rring = R.path(Raphael.transformPath(ringpath, 's0.6,0.6'))
 	        	.attr({
-	        //R.circle(x, y, 5).attr({
-	                fill: '#999',
-	                stroke: '#555',
-	                'stroke-width': 2
+	                fill: '#444',
+	                stroke: '#050',
+	                'stroke-width': 3
 	            }),
-	        //pull = R.path('M' + (x - 15) + ',' + y + 'l0,-' + 2*h + 'm30,0l0,' + 2*h + 'z').attr({fill: '#111', stroke: '#333',  'stroke-width': 2}),
-	        claw = R.set(carry, arm, arm2, ring, rring),
+	        rring2 = R.path(Raphael.transformPath(ringpath, 's0.4,0.4'))
+				.attr({
+	   				fill: '#888',
+			    	stroke: '#555',
+			    	'stroke-width': 2
+			    });
+
+	    
+	    var claw = R.set(carry, arm, arm2, pull, ring, rring, rring2),
 	        box = claw.getBBox();
 	    claw.data({
 				which: 'claw',
@@ -456,6 +488,7 @@ window.onload = function() {
 				fault: 0
 			});
 		claw.dblclick(function () {
+				console.log(box);
 				console.log('snapped: '+claw[0].data('snapped')+' button: '+claw[0].data('button'));
 				GUESS(claw);
 		});
@@ -529,7 +562,7 @@ window.onload = function() {
 	sandbox.dblclick(function () {
 		alert(end.output[0].target);
 	});
-	sandbox[5].toFront();
+	//sandbox[5].toFront();
 };
 
 ////////////////////////

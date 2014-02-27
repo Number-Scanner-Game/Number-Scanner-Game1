@@ -45,7 +45,7 @@ function updateObjectAttr(object, x, y) {
 						    setNow[0].data('snapped', 1);
 						    var next = Raphael.pathToRelative(object.attr('path'));
 						    var offset = next[0][2] - setBox.y;
-						    next[0][2] = line - setBox.height + offset;
+						    next[0][2] = line - setBox.height + offset + 1;
 						    object.attr({'path' : next});
 						};		
 						ly = 0;
@@ -56,9 +56,10 @@ function updateObjectAttr(object, x, y) {
 				break;
 
 				case 'claw': {
-					if (setBox.y + dy < 0) {ly = 0;
+					if (setNow[0].getBBox().y + dy < 0) {
+						ly = 0;
 						setNow[0].data('snapped', 0)}
-					else if (setBox.y2 + dy > line) {
+					else if (setBox.y2 + dy > line - 40) {
 					    if (!object.data('snapped')) {
 					    	var next = Raphael.pathToRelative(object.attr('path'));
 					    	next[0][2] = line - 60;
@@ -68,8 +69,10 @@ function updateObjectAttr(object, x, y) {
 					    ly = 0;
 					}
 
-					else {ly = dy;
-						setNow.data('snapped', 0)};
+					else {
+						ly = dy;
+						setNow.data('snapped', 0)
+					};
 				}
 				break;
 				default: {
@@ -128,7 +131,7 @@ function stop(object, event) {
 			object[8].animate({		//button appears
 				opacity: 1,
 				path: Raphael.transformPath(object[8].attr('path'), 's100,100')
-			},200,'bounce');		
+			},100,'<>');		
 	}
 
 	else if ((object[0].data('which') == 'ship') 
@@ -138,7 +141,7 @@ function stop(object, event) {
 			object[8].animate({			//button disappears
 				opacity: 0,
 				path: Raphael.transformPath(object[8].attr('path'), 's0.01,0.01')
-			},200,'bounce');
+			},150,'backIn');
 	};
 };
 
