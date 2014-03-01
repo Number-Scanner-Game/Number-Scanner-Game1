@@ -109,9 +109,9 @@ window.onload = function() {
 	 **/
 	var makeUfo = function (x, y, size, stars) {
     	var r = size*length*0.5,
-    		opac = 1,
-    		color = '#'+(5-stars)*222+'';
-    		color2 = '#'+stars*222+'';
+    		opac = 1/stars,
+    		color = "#666" //'#'+(5-stars)*222+'';
+    		color2 = "#999" //'#'+stars*222+'';
     	R.setStart();
 
     	//holder for data; indicates scanner width
@@ -131,7 +131,7 @@ window.onload = function() {
 	        	fill: "#e0f4f6",
 	            "stroke-width": 3,
 	        	stroke: "#ceebee",
-	        	opacity: opac
+	        	opacity: 1
     		});
 	    bottom.attr({path: Raphael.transformPath(bottom.attr('path'), 's0.7,0.7t0,-5')});
     	
@@ -149,7 +149,7 @@ window.onload = function() {
         	R.path("M" + (x + num) + "," + (y - 20) + " l10,0 l5,-10 l5,10 l10,0 l-10,6 l7,11 l-12,-7 l-12,7 l7,-11z").attr({
             	fill: fillColor,
             	stroke: "#d6a719",
-            	opacity: opac
+            	opacity: 0
         	});
         	if (i==stars-1)
         	{
